@@ -12,7 +12,14 @@ def reduce_dimension_ndc(df, ndc_df):
     return:
         df: pandas dataframe, output dataframe with joined generic drug name
     '''
-    return df
+
+    ndc_code_df = ndc_df[['NDC_Code', 'Non-proprietary Name']]
+    ndc_code_df = ndc_code_df.rename(columns={'NDC_Code':'ndc_code'})
+    
+    reduce_dim_df = pd.merge(df, ndc_code_df[['ndc_code', 'Non-proprietary Name']], on='ndc_code', how='left')
+    reduce_dim_df = reduce_dim_df.rename(columns={'Non-proprietary Name':'generic_drug_name'})
+    
+    return reduce_dim_df
 
 #Question 4
 def select_first_encounter(df):
@@ -21,7 +28,13 @@ def select_first_encounter(df):
     return:
         - first_encounter_df: pandas dataframe, dataframe with only the first encounter for a given patient
     '''
-    return first_encounter_df
+    reduce_dim_df_sorted = df.sort_values(by=['patient_nbr', 'encounter_id'])
+    #reduce_dim_df_sorted.head(50)
+    
+    first_occurrence_rows = reduce_dim_df_sorted.groupby('patient_nbr').apply(lambda x: x.iloc[0])
+    first_occurrence_rows = first_occurrence_rows.reset_index(drop=True)
+
+    return first_occurrence_rows
 
 
 #Question 6
