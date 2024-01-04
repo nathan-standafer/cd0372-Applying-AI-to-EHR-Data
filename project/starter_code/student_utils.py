@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 ####### STUDENTS FILL THIS OUT ######
 #Question 3
@@ -48,6 +49,12 @@ def patient_dataset_splitter(df, patient_key='patient_nbr'):
      - validation: pandas dataframe,
      - test: pandas dataframe,
     '''
+    # First split off 40% of the dataset for testing and validating
+    train, df_temp = train_test_split(df, test_size=0.4, random_state=1)
+    
+    # Now further divide the remaining (60%) into test and validation sets
+    test, validation = train_test_split(df_temp, test_size=0.5, random_state=1)
+
     return train, validation, test
 
 #Question 7
@@ -69,18 +76,22 @@ def create_tf_categorical_feature_cols(categorical_col_list,
         tf_categorical_feature_column = tf.feature_column.......
 
         '''
-        output_tf_list.append(tf_categorical_feature_column)
+        tf_categorical_feature_column = tf.feature_column.categorical_column_with_vocabulary_file(
+                                                                                    c,
+                                                                                    vocab_file_path)
+
+        
+        output_tf_list.append(tf.feature_column.indicator_column(tf_categorical_feature_column))
     return output_tf_list
 
 #Question 8
-def normalize_numeric_with_zscore(col, mean, std):
+def normalize_numeric_with_zscore(col, mean=0, std=0):
     '''
     This function can be used in conjunction with the tf feature column for normalization
     '''
     return (col - mean)/std
 
-
-
+from functools import partial
 def create_tf_numeric_feature(col, MEAN, STD, default_value=0):
     '''
     col: string, input numerical column name
@@ -91,6 +102,9 @@ def create_tf_numeric_feature(col, MEAN, STD, default_value=0):
     return:
         tf_numeric_feature: tf feature column representation of the input field
     '''
+    normalize_numeric_with_zscore_partial = partial(normalize_numeric_with_zscore, mean=MEAN, std=STD)
+    tf_numeric_feature = tf.feature_column.numeric_column(col, default_value=default_value, normalizer_fn=normalize_numeric_with_zscore_partial)
+    
     return tf_numeric_feature
 
 #Question 9
