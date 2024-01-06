@@ -107,13 +107,15 @@ def create_tf_numeric_feature(col, MEAN, STD, default_value=0):
     
     return tf_numeric_feature
 
+   
 #Question 9
 def get_mean_std_from_preds(diabetes_yhat):
     '''
     diabetes_yhat: TF Probability prediction object
     '''
-    m = '?'
-    s = '?'
+    m = diabetes_yhat.mean()
+    s = diabetes_yhat.stddev()
+    
     return m, s
 
 # Question 10
@@ -124,4 +126,7 @@ def get_student_binary_prediction(df, col):
     return:
         student_binary_prediction: pandas dataframe converting input to flattened numpy array and binary labels
     '''
+
+    student_binary_prediction = pd.DataFrame([[int(i > 5)] for i in df[col]], columns=['binary_pred'])
+    
     return student_binary_prediction
